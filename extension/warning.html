@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warning: suspected phishing site</title>
+<link rel="icon" href="icons/icon32.png">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { font-size: 14px; min-height: 100vh;
+         background: linear-gradient(var(--danger) 0 300px, var(--bg) 300px); padding: 56px 16px; }
+  .panel { background: var(--card); max-width: 640px; margin: 0 auto; border-radius: 26px; padding: 32px; box-shadow: var(--shadow); }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--danger); }
+  h1 { font-size: 30px; line-height: 1.1; margin: 6px 0 12px; }
+  .target { word-break: break-all; background: var(--bg); padding: 10px 12px; border-radius: 12px;
+            font-family: ui-monospace, Consolas, monospace; margin: 16px 0 20px; }
+  .buttons { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 24px; }
+  .buttons .primary { padding: 11px 22px; font-size: 14px; }
+  #proceed { background: none; border: none; color: var(--muted); text-decoration: underline; padding: 6px; }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <div class="eyebrow">PhishGuard blocked this page</div>
+    <h1 class="display">This site may be a phishing attempt</h1>
+    <p>Its address looks like a phishing URL. Phishing sites imitate trusted sites to steal passwords,
+       card numbers or other personal data.</p>
+    <div class="target" id="target"></div>
+    <div id="details" class="muted">Loading explanation…</div>
+    <div class="buttons">
+      <button class="primary" id="back">Back to safety</button>
+      <button id="proceed">I understand the risk, continue</button>
+    </div>
+  </div>
+  <script src="ui.js"></script>
+  <script src="warning.js"></script>
+</body>
+</html>

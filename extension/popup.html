@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { width: 370px; }
+  header { background: #4B6379; color: #F0EEE9; padding: 14px 16px 44px; }
+  @media (prefers-color-scheme: dark) { header { background: #34495C; } }
+  .top { display: flex; align-items: center; gap: 8px; }
+  .top svg { width: 22px; height: 22px; }
+  .top b { font-size: 15px; flex: 1; }
+  .switch { display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: rgba(240,238,233,.85); }
+  .switch input { accent-color: #F0EEE9; }
+  .url { word-break: break-all; font-size: 11px; color: rgba(240,238,233,.75); margin-top: 8px; }
+  .card { background: var(--card); border-radius: 18px; box-shadow: var(--shadow); padding: 14px; margin: 0 12px 12px; }
+  .card.first { margin-top: -32px; }
+  .row { display: flex; gap: 6px; align-items: center; }
+  .actions:empty { display: none; } .actions { margin-top: 10px; }
+  #manual-out:empty { display: none; } #manual-out { margin-top: 12px; }
+  footer { padding: 4px 16px 14px; font-size: 12px; color: var(--muted); }
+  footer label { display: flex; gap: 6px; align-items: center; margin: 4px 0 8px; color: var(--text); }
+  footer .row { justify-content: space-between; margin-top: 8px; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="top">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2l12 4.5v8.8C28 23 22.6 28.4 16 30 9.4 28.4 4 23 4 15.3V6.5z" fill="#F0EEE9"/><path d="M10.5 16l4 4 7-8" stroke="#4B6379" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <b class="display">PHISHGUARD</b>
+      <label class="switch"><input type="checkbox" id="enabled"> Protection</label>
+    </div>
+    <div class="url" id="tab-url"></div>
+  </header>
+
+  <div class="card first">
+    <div id="tab-out" class="muted">Analyzing…</div>
+    <div class="actions" id="trust"></div>
+  </div>
+
+  <div class="card">
+    <form class="row" id="manual">
+      <input type="text" id="manual-url" placeholder="Check any URL…" autocomplete="off" spellcheck="false">
+      <button class="primary">Check</button>
+    </form>
+    <div id="manual-out"></div>
+  </div>
+
+  <footer>
+    <label><input type="checkbox" id="warn"> Show a warning page before opening phishing sites</label>
+    <div id="stats"></div>
+    <div id="model"></div>
+    <div class="row"><span id="trusted-count"></span><button id="clear-trusted">Clear trusted sites</button></div>
+  </footer>
+
+  <script src="ui.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

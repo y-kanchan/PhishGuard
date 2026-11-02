@@ -1,0 +1,48 @@
+{
+  "run": "hybrid",
+  "arch": "hybrid",
+  "test": {
+    "accuracy": 0.9982142857142857,
+    "precision": 1.0,
+    "recall": 0.9959349593495935,
+    "f1": 0.9979633401221996,
+    "roc_auc": 1.0,
+    "pr_auc": 1.0,
+    "false_positive_rate": 0.0,
+    "threshold": 0.735751211643219,
+    "confusion_matrix": {
+      "tn": 314,
+      "fp": 0,
+      "fn": 1,
+      "tp": 245
+    },
+    "batched_inference_ms_per_url": 5.2425376786102005,
+    "parameters": 687874
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.2550993458557625,
+      "val_loss": 0.0019487791922949721,
+      "val_f1": 1.0,
+      "val_roc_auc": 1.0,
+      "lr": 0.001
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.0024371509975665254,
+      "val_loss": 9.006586032600953e-05,
+      "val_f1": 1.0,
+      "val_roc_auc": 1.0,
+      "lr": 0.001
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.0004298055573924668,
+      "val_loss": 4.320107526542604e-05,
+      "val_f1": 1.0,
+      "val_roc_auc": 1.0,
+      "lr": 0.0005
+    }
+  ]
+}

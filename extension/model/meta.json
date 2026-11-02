@@ -1,0 +1,24 @@
+{
+  "alphabet": "abcdefghijklmnopqrstuvwxyz0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
+  "max_len": 200,
+  "threshold": 0.735751211643219,
+  "arch": "hybrid",
+  "test_metrics": {
+    "accuracy": 0.9982142857142857,
+    "precision": 1.0,
+    "recall": 0.9959349593495935,
+    "f1": 0.9979633401221996,
+    "roc_auc": 1.0,
+    "pr_auc": 1.0,
+    "false_positive_rate": 0.0,
+    "threshold": 0.735751211643219,
+    "confusion_matrix": {
+      "tn": 314,
+      "fp": 0,
+      "fn": 1,
+      "tp": 245
+    },
+    "batched_inference_ms_per_url": 5.2425376786102005,
+    "parameters": 687874
+  }
+}
