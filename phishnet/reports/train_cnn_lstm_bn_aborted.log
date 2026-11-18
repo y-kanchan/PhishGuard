@@ -1,0 +1,10 @@
+[data] 231,747 unique URLs (41.8% phishing) -> train 185,397 / val 23,175 / test 23,175
+[model] cnn_lstm - 215,234 parameters on cpu
+    step 200/725 loss 0.7439 (140s)
+    step 400/725 loss 0.5845 (268s)
+    step 600/725 loss 0.5067 (390s)
+epoch  1 | train loss 0.4799 acc 0.8114 | val loss 0.5741 acc 0.8062 F1 0.7676 AUC 0.85252 | 881s
+    step 200/725 loss 0.3223 (172s)
+    step 400/725 loss 0.3146 (952s)
+    step 600/725 loss 0.3155 (1043s)
+epoch  2 | train loss 0.3145 acc 0.8883 | val loss 0.5248 acc 0.8473 F1 0.8009 AUC 0.86572 | 1105s

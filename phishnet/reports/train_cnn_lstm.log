@@ -1,0 +1,33 @@
+[data] 231,747 unique URLs (41.8% phishing) -> train 185,397 / val 23,175 / test 23,175
+[model] cnn_lstm - 215,234 parameters on cpu
+    step 200/725 loss 0.7602 (377s)
+    step 400/725 loss 0.6271 (685s)
+    step 600/725 loss 0.5395 (975s)
+epoch  1 | train loss 0.5079 acc 0.7767 | val loss 0.3783 acc 0.8819 F1 0.8508 AUC 0.92666 | 1154s
+    step 200/725 loss 0.3232 (355s)
+    step 400/725 loss 0.3167 (714s)
+    step 600/725 loss 0.3161 (1078s)
+epoch  2 | train loss 0.3145 acc 0.8891 | val loss 0.3541 acc 0.8862 F1 0.8563 AUC 0.93016 | 1318s
+    step 200/725 loss 0.2797 (481s)
+    step 400/725 loss 0.2868 (853s)
+    step 600/725 loss 0.2920 (1218s)
+epoch  3 | train loss 0.2942 acc 0.8957 | val loss 0.3313 acc 0.8954 F1 0.8653 AUC 0.93499 | 1422s
+    step 200/725 loss 0.2902 (346s)
+    step 400/725 loss 0.2866 (649s)
+    step 600/725 loss 0.2852 (901s)
+epoch  4 | train loss 0.2843 acc 0.8993 | val loss 0.3406 acc 0.8854 F1 0.8584 AUC 0.93647 | 1106s
+    step 200/725 loss 0.2768 (360s)
+    step 400/725 loss 0.2733 (669s)
+    step 600/725 loss 0.2708 (983s)
+epoch  5 | train loss 0.2742 acc 0.9027 | val loss 0.3176 acc 0.8981 F1 0.8699 AUC 0.93942 | 1185s
+    step 200/725 loss 0.2515 (284s)
+    step 400/725 loss 0.2621 (547s)
+    step 600/725 loss 0.2640 (816s)
+epoch  6 | train loss 0.2665 acc 0.9065 | val loss 0.3198 acc 0.8957 F1 0.8685 AUC 0.94018 | 985s
+    step 200/725 loss 0.2619 (329s)
+    step 400/725 loss 0.2631 (627s)
+    step 600/725 loss 0.2601 (923s)
+epoch  7 | train loss 0.2588 acc 0.9086 | val loss 0.3179 acc 0.8970 F1 0.8697 AUC 0.94038 | 1123s
+    step 200/725 loss 0.2532 (332s)
+    step 400/725 loss 0.2539 (632s)
+    step 600/725 loss 0.2561 (33288s)
