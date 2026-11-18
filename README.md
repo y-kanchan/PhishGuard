@@ -44,6 +44,46 @@ URL ─► normalise (lowercase, strip scheme + www.) ─► char ids (max 200)
 * **Ablations:** `--arch cnn` and `--arch bilstm` train the single-branch variants.
   `src.baseline` trains a TF-IDF char n-gram + logistic regression baseline on the same split.
 
+## Evaluation
+
+Results on the **PhiUSIIL Phishing URL Dataset** (UCI ML Repository, id 967; 235,795 URLs). The dataset was
+cleaned to 231,747 unique URLs and split 80 / 10 / 10 with stratification. Scores are on the held-out test set of
+23,175 URLs, at a decision threshold tuned for F1 on the validation set. Model and code: [`phishnet/`](phishnet/).
+
+| Model | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC | False positive rate |
+|---|---|---|---|---|---|---|---|
+| **CNN-LSTM** (Conv1D k=3/5/7 + BiLSTM + attention, 215K params) | **0.9017** | **0.9460** | **0.8112** | **0.8734** | **0.9408** | **0.9452** | **0.0333** |
+| TF-IDF char 1–5-grams + logistic regression (baseline) | 0.8948 | 0.9282 | 0.8111 | 0.8657 | 0.9406 | – | 0.0451 |
+
+**Confusion matrix** (CNN-LSTM, test set):
+
+| | Predicted legitimate | Predicted phishing |
+|---|---|---|
+| **Actually legitimate** | 13,032 | 449 |
+| **Actually phishing** | 1,830 | 7,864 |
+
+**Shortcut audit.** In the raw PhiUSIIL data every legitimate URL is a bare `https://www.<domain>` homepage
+with no path. Scheme and `www.` are therefore stripped, and neutral paths are added to 35 % of the training
+legitimate URLs. The audit checks how far the model still relies on "has a path":
+
+| Check | CNN-LSTM |
+|---|---|
+| False positive rate, legitimate homepages | 3.33 % |
+| False positive rate, legitimate domains with random paths from an unseen vocabulary | 37.51 % |
+| Phishing recall, URLs with a path | 98.43 % |
+| Phishing recall, host name only | 74.34 % |
+
+Because of this preprocessing, the scores are lower than the near-100 % often reported for PhiUSIIL. The
+37.5 % row shows that the path shortcut is reduced but not removed. Training data with real legitimate URLs that
+have paths would be needed to remove it.
+
+Training ran on a CPU for 7 epochs, about 19 minutes per epoch. The model uses AdamW with a one-cycle learning
+rate schedule, batches bucketed by URL length, and LayerNorm. The full write-up is in
+[`phishnet/README.md`](phishnet/README.md).
+
+> `reports/comparison.md` previously listed scores of about 1.000. Those came from the synthetic smoke-test data
+> (`scripts/make_demo_data.py`), which is meaningless for evaluation. It now holds the PhiUSIIL results above.
+
 ## Project layout
 
 ```
