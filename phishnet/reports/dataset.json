@@ -1,0 +1,203 @@
+{
+  "name": "PhiUSIIL Phishing URL Dataset",
+  "source": "UCI Machine Learning Repository, id 967 (Prasad & Chandra, 2023)",
+  "raw_rows": 235795,
+  "raw_counts": {
+    "legitimate": 134850,
+    "phishing": 100945
+  },
+  "unique_after_normalisation": 231747,
+  "duplicates_removed": 4005,
+  "conflicting_removed": 43,
+  "clean_counts": {
+    "legitimate": 134807,
+    "phishing": 96940
+  },
+  "artifacts": {
+    "starts_https": {
+      "legitimate": 1.0,
+      "phishing": 0.48735449997523406
+    },
+    "has_www": {
+      "legitimate": 1.0,
+      "phishing": 0.4137005299915796
+    },
+    "has_path": {
+      "legitimate": 0.0,
+      "phishing": 0.2841448313438011
+    }
+  },
+  "length_bins": [
+    0,
+    10,
+    15,
+    20,
+    25,
+    30,
+    40,
+    50,
+    75,
+    100,
+    150,
+    200,
+    "200+"
+  ],
+  "length_hist": {
+    "legitimate": [
+      14646,
+      49317,
+      46314,
+      19309,
+      4423,
+      785,
+      13,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "phishing": [
+      3717,
+      16196,
+      16449,
+      11140,
+      11242,
+      14400,
+      7614,
+      7542,
+      4741,
+      1699,
+      916,
+      1284
+    ]
+  },
+  "median_length": {
+    "legitimate": 15.0,
+    "phishing": 25.0
+  },
+  "top_tlds": {
+    "legitimate": [
+      [
+        "com",
+        68785
+      ],
+      [
+        "org",
+        16524
+      ],
+      [
+        "uk",
+        6073
+      ],
+      [
+        "net",
+        3998
+      ],
+      [
+        "de",
+        3310
+      ],
+      [
+        "au",
+        2606
+      ],
+      [
+        "jp",
+        2082
+      ],
+      [
+        "edu",
+        1856
+      ],
+      [
+        "it",
+        1669
+      ],
+      [
+        "nl",
+        1536
+      ],
+      [
+        "ca",
+        1502
+      ],
+      [
+        "fr",
+        1366
+      ]
+    ],
+    "phishing": [
+      [
+        "com",
+        43769
+      ],
+      [
+        "app",
+        6368
+      ],
+      [
+        "co",
+        4964
+      ],
+      [
+        "io",
+        3769
+      ],
+      [
+        "net",
+        3099
+      ],
+      [
+        "ru",
+        2983
+      ],
+      [
+        "top",
+        2327
+      ],
+      [
+        "dev",
+        2312
+      ],
+      [
+        "org",
+        2269
+      ],
+      [
+        "site",
+        1477
+      ],
+      [
+        "link",
+        1455
+      ],
+      [
+        "xyz",
+        1448
+      ]
+    ]
+  },
+  "samples": {
+    "legitimate": [
+      "https://www.katoliska-cerkev.si",
+      "https://www.claret.ca",
+      "https://www.laviedesclassiques.fr",
+      "https://www.actuarialsociety.org.za",
+      "https://www.4wdm-msa.org",
+      "https://www.emojidom.com",
+      "https://www.lapatilla.com",
+      "https://www.rectoversoblog.com"
+    ],
+    "phishing": [
+      "https://aol-109692.weeblysite.com/",
+      "https://etc-acea.cam",
+      "https://www.mynetbank.application.online.stafflodge.com/",
+      "http://www.itt.us",
+      "https://am32fcu.web.app/",
+      "https://kuuucoinessssluginces.godaddysites.com/",
+      "http://www.ssecure.online",
+      "https://track-cy.web.app/"
+    ]
+  }
+}
