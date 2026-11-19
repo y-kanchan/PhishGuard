@@ -1,6 +1,6 @@
 """Explain a prediction from the command line.
 
-    python -m src.predict "http://paypal-secure-login.xyz/verify"
+    python -m src.predict "http://paypal-secure-login.xyz/verify" "https://github.com"
 """
 import argparse
 import json
@@ -11,7 +11,7 @@ from .inference import Predictor
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("urls", nargs="+")
-    p.add_argument("--model", default="models/phishguard_hybrid.pt")
+    p.add_argument("--model", default="models/cnn_lstm.pt")
     p.add_argument("--json", action="store_true", help="print the full JSON result")
     args = p.parse_args()
 

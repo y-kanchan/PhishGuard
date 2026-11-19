@@ -3,245 +3,258 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PhishGuard</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l12 4.5v8.8C28 23 22.6 28.4 16 30 9.4 28.4 4 23 4 15.3V6.5z' fill='%234B6379'/%3E%3Cpath d='M10.5 16l4 4 7-8' stroke='%23F0EEE9' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<style>
-  :root {
-    --cloud: #F0EEE9;          /* Pantone Cloud Dancer */
-    --fusion: #4B6379;         /* Pantone Blue Fusion */
-    --fusion-deep: #3A4E61;
-    --bg: var(--cloud);
-    --band: var(--fusion);
-    --card: #FAF9F6;
-    --ink: #2C3A48;
-    --muted: #6F7C89;
-    --line: #DEDAD2;
-    --soft: #E8E5DE;
-    --danger: #A9473C;
-    --danger-rgb: 169, 71, 60;
-    --safe-rgb: 75, 99, 121;
-    --attn-rgb: 184, 149, 90;
-    --shadow: 0 18px 40px rgba(44, 58, 72, .16), 0 2px 6px rgba(44, 58, 72, .06);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1B232B; --band: #34495C; --card: #24303B; --ink: #ECE9E3; --muted: #9AA7B3;
-      --line: #33414E; --soft: #2C3946; --danger: #D0685C; --danger-rgb: 208, 104, 92;
-      --safe-rgb: 133, 163, 190; --shadow: 0 18px 40px rgba(0, 0, 0, .35);
-    }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink);
-         font: 15px/1.55 "Avenir Next", Avenir, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; }
-  .display { font-family: "Helvetica Neue", "Arial Black", "Segoe UI", sans-serif; font-weight: 900; letter-spacing: -.01em; }
-
-  /* split background: Blue Fusion band, Cloud Dancer below */
-  .hero { background: var(--band); color: #F0EEE9; padding: 28px 16px 120px; }
-  .wrap { max-width: 920px; margin: 0 auto; }
-  .brand { display: flex; align-items: center; gap: 10px; }
-  .brand svg { width: 30px; height: 30px; }
-  .brand b { font-size: 20px; }
-  .chips { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-  .chip { font-size: 12px; padding: 3px 10px; border: 1px solid rgba(240,238,233,.35); border-radius: 999px; color: rgba(240,238,233,.85); }
-  .hero h1 { font-size: clamp(32px, 6vw, 52px); line-height: 1.05; margin: 48px 0 10px; }
-  .hero p { margin: 0; max-width: 560px; color: rgba(240,238,233,.8); }
-
-  main { padding: 0 16px 64px; margin-top: -84px; }
-  .card { background: var(--card); border-radius: 22px; box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px; }
-  .search form { display: flex; gap: 10px; }
-  .search input { flex: 1; min-width: 0; font: inherit; font-size: 16px; color: var(--ink); background: var(--bg);
-                  border: 1.5px solid transparent; border-radius: 14px; padding: 14px 16px; outline: none; transition: border-color .15s; }
-  .search input:focus { border-color: var(--fusion); }
-  .btn { font: inherit; font-weight: 700; border: 0; border-radius: 14px; padding: 0 26px; cursor: pointer;
-         background: var(--fusion); color: #F0EEE9; transition: background .15s, transform .1s; }
-  .btn:hover { background: var(--fusion-deep); } .btn:active { transform: scale(.98); }
-  .btn:disabled { opacity: .6; cursor: wait; }
-  .examples { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; align-items: center; }
-  .examples span { font-size: 13px; color: var(--muted); }
-  .examples button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: transparent; color: var(--ink);
-                     border-radius: 999px; padding: 4px 12px; cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .examples button:hover { border-color: var(--fusion); }
-
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .grid > .card { margin-bottom: 0; }
-  .grid + .card, .grid + .grid { margin-top: 20px; }
-  @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } .search form { flex-direction: column; } .btn { padding: 14px; } }
-
-  /* swatch cards (Pantone chip look) */
-  .swatch { border-radius: 22px; box-shadow: var(--shadow); padding: 24px; min-height: 230px; display: flex; flex-direction: column; }
-  .swatch .name { font-size: 26px; line-height: 1; }
-  .swatch .sub { font-size: 15px; font-weight: 600; margin-top: 4px; }
-  .swatch .push { margin-top: auto; }
-  .swatch.legitimate { background: #4B6379; color: #F0EEE9; }
-  .swatch.phishing { background: var(--danger); color: #F7F1EC; }
-  .swatch.light { background: var(--card); color: var(--ink); }
-  .swatch.light .name { color: var(--fusion); }
-  @media (prefers-color-scheme: dark) { .swatch.light .name { color: #A9BDD0; } }
-  .big { font-size: 56px; line-height: 1; }
-  .meter { height: 8px; border-radius: 4px; background: rgba(240,238,233,.25); overflow: hidden; margin-top: 12px; }
-  .meter div { height: 100%; background: #F0EEE9; border-radius: 4px; }
-
-  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 14px; color: var(--muted); font-weight: 700; }
-  .muted { color: var(--muted); }
-  .small { font-size: 13px; }
-  .summary { font-size: 16px; margin: 0 0 16px; }
-  .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; }
-  .kv dt { color: var(--muted); } .kv dd { margin: 0; word-break: break-all; }
-  .heat { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 16px; word-break: break-all; line-height: 2.1;
-          background: var(--bg); border-radius: 14px; padding: 12px 14px; }
-  .heat span { padding: 3px 0; border-radius: 3px; }
-  .legend { display: flex; gap: 18px; margin-top: 10px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
-  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 4px; vertical-align: -2px; margin-right: 6px; }
-
-  .tokens { list-style: none; margin: 0; padding: 0; }
-  .tokens li { display: grid; grid-template-columns: minmax(70px, 34%) 1fr auto; gap: 10px; align-items: center; margin: 8px 0; }
-  .tok { font-family: ui-monospace, Consolas, monospace; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .bar { height: 8px; border-radius: 4px; background: var(--soft); overflow: hidden; }
-  .bar div { height: 100%; border-radius: 4px; }
-  .score { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
-
-  .flags { list-style: none; margin: 0; padding: 0; }
-  .flags li { padding: 10px 0; border-top: 1px solid var(--line); }
-  .flags li:first-child { border-top: 0; padding-top: 0; }
-  .flags b { display: block; font-size: 14px; }
-  .flags span { font-size: 13px; color: var(--muted); }
-  .empty { color: var(--muted); font-size: 14px; }
-
-  .err { color: var(--danger); }
-  .loading { opacity: .55; transition: opacity .2s; }
-  footer { text-align: center; font-size: 12px; color: var(--muted); padding: 8px 16px 32px; }
-</style>
+<title>PhisNet · CNN-LSTM URL Detection</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f1d1a'/%3E%3Cpath d='M7 21c3-7 6-10 9-10s6 3 9 10' stroke='%23e66249' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='11' r='3' fill='%23f6f3ec'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
-<div class="hero">
-  <div class="wrap">
-    <div class="brand">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2l12 4.5v8.8C28 23 22.6 28.4 16 30 9.4 28.4 4 23 4 15.3V6.5z" fill="#F0EEE9"/><path d="M10.5 16l4 4 7-8" stroke="#4B6379" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <b class="display">PHISHGUARD</b>
-      <div class="chips"><span class="chip">CNN-BiLSTM</span><span class="chip">Explainable</span><span class="chip">Real-time</span></div>
-    </div>
-    <h1 class="display">Is this link safe?</h1>
-    <p>Paste any URL. A hybrid CNN-BiLSTM reads it character by character and tells you whether it looks like
-       phishing, and why.</p>
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="#scan" aria-label="PhisNet home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M7 21c3-7 6-10 9-10s6 3 9 10" stroke="var(--phish)" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="16" cy="11" r="3" fill="var(--paper)"/></svg>
+      <span>Phis<em>Net</em></span>
+    </a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#scan" data-tab="scan">Scan</a>
+      <a href="#batch" data-tab="batch">Batch</a>
+      <a href="#model" data-tab="model">Model</a>
+      <a href="#dataset" data-tab="dataset">Dataset</a>
+      <a href="#history" data-tab="history">History</a>
+    </nav>
+    <div class="status" id="status" title="Model status"><i></i><span>connecting…</span></div>
   </div>
-</div>
+</header>
 
-<main>
-  <div class="wrap">
-    <div class="card search">
-      <form id="f">
-        <input id="url" placeholder="https://example.com/login" autocomplete="off" spellcheck="false" required aria-label="URL to analyze">
-        <button class="btn" id="go">Analyze</button>
-      </form>
-      <div class="examples"><span>Try</span>
-        <button type="button">https://github.com/pytorch/pytorch</button>
-        <button type="button">http://paypal.com.verify-account.tk/webscr/login.php</button>
-        <button type="button">http://192.168.12.4/apple/icloud/unlock</button>
-      </div>
-    </div>
+<main class="wrap">
 
-    <div id="out">
-      <div class="grid">
-        <div class="swatch legitimate">
-          <div class="name display">CNN</div><div class="sub">Local patterns</div>
-          <p class="push small">Convolutions with kernels of 3, 5 and 7 spot n-grams like <code>-login-</code>, <code>.tk</code> or IP octets.</p>
-        </div>
-        <div class="swatch light">
-          <div class="name display">BiLSTM</div><div class="sub">Context &amp; order</div>
-          <p class="push small">Reads the URL in both directions, so it notices a brand used as a subdomain of an unrelated site.</p>
-        </div>
-      </div>
-    </div>
+<!-- ============================================================ SCAN -->
+<section id="view-scan" class="view">
+  <div class="intro">
+    <p class="eyebrow">Character-level CNN-LSTM · trained on PhiUSIIL</p>
+    <h1>Is this link <em>safe</em>?</h1>
+    <p class="lede">Paste a URL. The model reads it one character at a time, so no page is downloaded and no third-party lookup is made. You get a verdict and the characters behind it.</p>
   </div>
-</main>
-<footer>PhishGuard · explanations via Integrated Gradients, attention and lexical rules</footer>
 
-<script>
-const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  <form id="scan-form" class="scan" autocomplete="off">
+    <label for="url" class="sr">URL to check</label>
+    <input id="url" name="url" type="text" spellcheck="false" placeholder="https://example.com/path" required>
+    <button class="btn primary" type="submit" id="scan-btn">Analyse</button>
+  </form>
+  <div class="examples" id="examples"><span>Try</span></div>
 
-document.querySelectorAll('.examples button').forEach(b => b.onclick = () => { $('#url').value = b.textContent; analyze(); });
-$('#f').onsubmit = e => { e.preventDefault(); analyze(); };
+  <div id="scan-error" class="error" hidden></div>
 
-async function analyze() {
-  const url = $('#url').value.trim();
-  if (!url) return;
-  $('#go').disabled = true;
-  $('#out').classList.add('loading');
-  try {
-    const r = await fetch('/api/predict', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ url, explain: true }) });
-    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
-    render(await r.json());
-  } catch (err) {
-    $('#out').innerHTML = `<div class="card err">Could not analyze: ${esc(err.message || err)}</div>`;
-  } finally {
-    $('#go').disabled = false;
-    $('#out').classList.remove('loading');
-  }
-}
-
-function paint(text, values, colorFor) {
-  const max = Math.max(1e-9, ...values.map(Math.abs));
-  return [...text].map((ch, i) => {
-    const v = (values[i] || 0) / max;
-    const a = (Math.sqrt(Math.min(Math.abs(v), 1)) * 0.75).toFixed(3);
-    return `<span style="background:rgba(${colorFor(v)},${a})" title="${(values[i] || 0).toFixed(4)}">${esc(ch)}</span>`;
-  }).join('');
-}
-
-function render(r) {
-  const e = r.explanation, phishing = r.label === 'phishing';
-  const pct = (r.probability * 100).toFixed(1);
-  const dRGB = css('--danger-rgb'), sRGB = css('--safe-rgb'), aRGB = css('--attn-rgb');
-  const maxTok = Math.max(1e-9, ...e.top_tokens.map(t => Math.abs(t.score)));
-  const tokens = e.top_tokens.length
-    ? `<ul class="tokens">${e.top_tokens.map(t => `
-        <li><span class="tok" title="${esc(t.token)}">${esc(t.token)}</span>
-          <span class="bar"><div style="width:${(Math.abs(t.score) / maxTok * 100).toFixed(0)}%;background:rgb(${phishing ? dRGB : sRGB})"></div></span>
-          <span class="score">${t.score >= 0 ? '+' : ''}${t.score.toFixed(2)}</span></li>`).join('')}</ul>`
-    : '<p class="empty">No single token dominated the decision.</p>';
-  const flags = e.indicators.length
-    ? `<ul class="flags">${e.indicators.map(i => `<li><b>${esc(i.indicator)}</b><span>${esc(i.detail)}</span></li>`).join('')}</ul>`
-    : '<p class="empty">No lexical red flags found.</p>';
-
-  $('#out').innerHTML = `
-    <div class="grid">
-      <div class="swatch ${r.label}">
-        <div class="name display">${phishing ? 'PHISHING' : 'LOOKS SAFE'}</div>
-        <div class="sub">${phishing ? 'Do not enter credentials' : 'No phishing pattern detected'}</div>
-        <div class="push">
-          <div class="big display">${pct}%</div>
-          <div class="small">phishing probability</div>
-          <div class="meter"><div style="width:${pct}%"></div></div>
-        </div>
+  <article id="result" class="result" hidden>
+    <div class="verdict-row">
+      <div class="verdict">
+        <p class="eyebrow" id="r-eyebrow">Verdict</p>
+        <h2 id="r-label">—</h2>
+        <p id="r-summary" class="summary"></p>
       </div>
-      <div class="card">
-        <h2>Verdict</h2>
-        <p class="summary">${esc(e.summary)}</p>
-        <dl class="kv">
-          <dt>Analyzed</dt><dd>${esc(e.analyzed_text)}</dd>
-          <dt>Latency</dt><dd>${r.latency_ms} ms (with explanation)</dd>
-          <dt>Threshold</dt><dd>${r.threshold.toFixed(3)}</dd>
+      <div class="meter-block">
+        <div class="meter-head"><span>P(phishing)</span><b id="r-prob">—</b></div>
+        <div class="meter" id="r-meter" role="img"><div class="fill"></div><div class="tick"></div></div>
+        <div class="meter-scale"><span>0</span><span id="r-thr">threshold</span><span>1</span></div>
+        <dl class="facts">
+          <div><dt>Latency</dt><dd id="r-lat">—</dd></div>
+          <div><dt>Characters read</dt><dd id="r-len">—</dd></div>
         </dl>
       </div>
     </div>
-    <div class="card">
-      <h2>Character attribution · Integrated Gradients</h2>
-      <div class="heat">${paint(e.analyzed_text, e.char_attributions, v => v > 0 ? dRGB : sRGB)}</div>
-      <div class="legend"><span><i class="sw" style="background:rgb(${dRGB})"></i>pushes toward phishing</span>
-        <span><i class="sw" style="background:rgb(${sRGB})"></i>pushes toward legitimate</span></div>
+
+    <div class="block">
+      <div class="block-head">
+        <h3>What the model looked at</h3>
+        <div class="seg" role="tablist" aria-label="Explanation view">
+          <button type="button" data-mode="ig" class="on" role="tab">Attribution</button>
+          <button type="button" data-mode="attn" role="tab">Attention</button>
+        </div>
+      </div>
+      <p class="note" id="heat-note"></p>
+      <div class="heat" id="heat"></div>
+      <div class="legend" id="heat-legend"></div>
     </div>
-    <div class="card">
-      <h2>Attention · where the model looked</h2>
-      <div class="heat">${paint(e.analyzed_text, e.attention, () => aRGB)}</div>
+
+    <div class="cols">
+      <div class="block">
+        <h3>Most influential tokens</h3>
+        <p class="note">Change in the model's phishing score (logit) when the token is deleted from the URL.</p>
+        <ol class="tokens" id="r-tokens"></ol>
+      </div>
+      <div class="block">
+        <h3>Lexical red flags</h3>
+        <p class="note">Rule-based checks shown as supporting evidence. They are not model inputs.</p>
+        <ul class="flags" id="r-flags"></ul>
+      </div>
     </div>
-    <div class="grid">
-      <div class="card"><h2>Most influential tokens</h2>${tokens}</div>
-      <div class="card"><h2>Red flags · rule-based</h2>${flags}</div>
-    </div>`;
-}
-</script>
+  </article>
+
+  <aside class="how" id="how">
+    <h3>How a URL becomes a verdict</h3>
+    <ol class="pipeline">
+      <li><b>Normalise</b><span>lower-case, drop <code>https://</code> and <code>www.</code></span></li>
+      <li><b>Embed</b><span>each character → 64-d vector, max 128 chars</span></li>
+      <li><b>Convolve</b><span>kernels 3 · 5 · 7 find n-grams like <code>paypa1</code>, <code>-login</code>, <code>.top</code></span></li>
+      <li><b>BiLSTM</b><span>reads the patterns in order, both directions</span></li>
+      <li><b>Attend</b><span>weighs positions, pools to one vector</span></li>
+      <li><b>Classify</b><span>dense layer → sigmoid → P(phishing)</span></li>
+    </ol>
+  </aside>
+</section>
+
+<!-- ============================================================ BATCH -->
+<section id="view-batch" class="view" hidden>
+  <div class="intro">
+    <p class="eyebrow">Bulk screening</p>
+    <h1>Check a list at once</h1>
+    <p class="lede">One URL per line, or load a CSV. The first column named <code>url</code> is used, otherwise the first column.</p>
+  </div>
+  <div class="batch-input">
+    <textarea id="batch-text" rows="8" spellcheck="false" placeholder="paypal.com.secure-verify.top/login&#10;https://www.wikipedia.org&#10;…"></textarea>
+    <div class="batch-actions">
+      <label class="btn ghost file">Load CSV<input type="file" id="batch-file" accept=".csv,.txt"></label>
+      <span class="note" id="batch-count">0 URLs</span>
+      <button class="btn primary" id="batch-run" type="button">Run batch</button>
+    </div>
+  </div>
+  <div id="batch-error" class="error" hidden></div>
+  <div id="batch-out" hidden>
+    <div class="batch-summary" id="batch-summary"></div>
+    <div class="table-tools">
+      <div class="seg" id="batch-filter">
+        <button type="button" data-f="all" class="on">All</button>
+        <button type="button" data-f="phishing">Phishing</button>
+        <button type="button" data-f="legitimate">Legitimate</button>
+      </div>
+      <button class="btn ghost" id="batch-export" type="button">Export CSV</button>
+    </div>
+    <div class="table-wrap"><table class="data" id="batch-table">
+      <thead><tr><th>URL</th><th data-sort="probability" class="num sortable">P(phishing)</th><th>Verdict</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================================================ MODEL -->
+<section id="view-model" class="view" hidden>
+  <div class="intro">
+    <p class="eyebrow">Held-out test set · never seen in training</p>
+    <h1>How well it works</h1>
+    <p class="lede" id="m-lede">Loading the latest training report…</p>
+  </div>
+  <div id="model-empty" class="empty" hidden></div>
+  <div id="model-body" hidden>
+    <div class="kpis" id="m-kpis"></div>
+
+    <div class="grid2">
+      <figure class="chart-card">
+        <figcaption><h3>Confusion matrix</h3><p>at the tuned threshold</p></figcaption>
+        <div id="m-cm" class="cm"></div>
+      </figure>
+      <figure class="chart-card">
+        <figcaption><h3>Score distribution</h3><p>P(phishing) on test URLs, by true class</p></figcaption>
+        <div id="m-hist" class="chart"></div>
+      </figure>
+      <figure class="chart-card">
+        <figcaption><h3>ROC curve</h3><p id="m-roc-cap"></p></figcaption>
+        <div id="m-roc" class="chart"></div>
+      </figure>
+      <figure class="chart-card">
+        <figcaption><h3>Precision–recall</h3><p id="m-pr-cap"></p></figcaption>
+        <div id="m-pr" class="chart"></div>
+      </figure>
+      <figure class="chart-card">
+        <figcaption><h3>Loss per epoch</h3><p>binary cross-entropy</p></figcaption>
+        <div id="m-loss" class="chart"></div>
+      </figure>
+      <figure class="chart-card">
+        <figcaption><h3>Accuracy per epoch</h3><p>validation ROC-AUC in the tooltip</p></figcaption>
+        <div id="m-acc" class="chart"></div>
+      </figure>
+    </div>
+
+    <div class="block">
+      <h3>Shortcut audit</h3>
+      <p class="note">PhiUSIIL's legitimate URLs are all bare homepages. These checks show whether the model learned phishing patterns or just "has a path".</p>
+      <div class="robust" id="m-robust"></div>
+    </div>
+
+    <div class="block">
+      <h3>Compared with ablations and a baseline</h3>
+      <p class="note">Same split, same preprocessing. Rows appear as each run finishes.</p>
+      <div class="table-wrap"><table class="data" id="m-compare"></table></div>
+    </div>
+
+    <div class="block arch">
+      <h3>Architecture</h3>
+      <div class="arch-flow" id="m-arch"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ DATASET -->
+<section id="view-dataset" class="view" hidden>
+  <div class="intro">
+    <p class="eyebrow" id="d-source">PhiUSIIL Phishing URL Dataset</p>
+    <h1>What it learned from</h1>
+    <p class="lede" id="d-lede"></p>
+  </div>
+  <div id="dataset-body">
+    <div class="funnel" id="d-funnel"></div>
+    <div class="grid2">
+      <figure class="chart-card wide">
+        <figcaption><h3>The giveaway in the raw data</h3><p>share of raw URLs with each property. Scheme and <code>www.</code> are stripped before training for this reason.</p></figcaption>
+        <div id="d-artifacts"></div>
+      </figure>
+      <figure class="chart-card wide">
+        <figcaption><h3>URL length after normalisation</h3><p>number of URLs per length band</p></figcaption>
+        <div id="d-length" class="chart"></div>
+      </figure>
+      <figure class="chart-card">
+        <figcaption><h3>Top TLDs · legitimate</h3></figcaption>
+        <div id="d-tld-legit"></div>
+      </figure>
+      <figure class="chart-card">
+        <figcaption><h3>Top TLDs · phishing</h3></figcaption>
+        <div id="d-tld-phish"></div>
+      </figure>
+    </div>
+    <div class="cols">
+      <div class="block"><h3>Sample legitimate URLs</h3><ul class="samples" id="d-s-legit"></ul></div>
+      <div class="block"><h3>Sample phishing URLs</h3><p class="note">Shown as text only. Do not open.</p><ul class="samples" id="d-s-phish"></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ HISTORY -->
+<section id="view-history" class="view" hidden>
+  <div class="intro">
+    <p class="eyebrow">Stored locally in data/history.db</p>
+    <h1>Recent scans</h1>
+    <p class="lede" id="h-lede"></p>
+  </div>
+  <div class="table-tools">
+    <span></span>
+    <button class="btn ghost" id="h-clear" type="button">Clear history</button>
+  </div>
+  <div class="table-wrap"><table class="data" id="h-table">
+    <thead><tr><th>When</th><th>URL</th><th class="num">P(phishing)</th><th>Verdict</th><th>Source</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+
+</main>
+
+<footer class="wrap foot">
+  <span>PhisNet · Phishing URL detection with a character-level CNN-LSTM</span>
+  <span>API: <code>POST /api/predict</code> · <code>POST /api/batch</code> · <a href="/docs">/docs</a></span>
+</footer>
+
+<div id="tip" class="tip" role="tooltip" hidden></div>
+<script src="/static/charts.js"></script>
+<script src="/static/app.js"></script>
 </body>
 </html>

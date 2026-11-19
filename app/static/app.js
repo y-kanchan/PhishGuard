@@ -179,7 +179,7 @@ function initBatch() {
     const csv = "url,probability,label\n" + batchRows.map(r => `"${r.url.replace(/"/g, '""')}",${r.probability.toFixed(6)},${r.label}`).join("\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    a.download = "phishnet_batch_results.csv"; a.click(); URL.revokeObjectURL(a.href);
+    a.download = "phisnet_batch_results.csv"; a.click(); URL.revokeObjectURL(a.href);
   };
 }
 

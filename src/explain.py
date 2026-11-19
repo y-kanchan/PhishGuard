@@ -1,6 +1,7 @@
-"""Explainability for PhishGuard predictions.
+"""Explainability for CNN-LSTM phishing predictions.
 
-Three complementary views:
+Four complementary views:
+  0. Token occlusion - delete one URL token, measure the change in the phishing logit.
   1. Integrated Gradients (Sundararajan et al., 2017) on the character embeddings - signed,
      per-character contribution to the phishing logit (+ pushes toward phishing).
   2. Attention weights - where the pooling layer looked (unsigned).
@@ -26,21 +27,66 @@ BRANDS = ("paypal", "apple", "icloud", "microsoft", "office365", "outlook", "ama
           "dhl", "fedex", "coinbase", "binance", "metamask", "steam", "adobe", "docusign")
 
 
-def integrated_gradients(model, ids: torch.Tensor, steps: int = 32) -> torch.Tensor:
-    """Per-character IG attributions for a single encoded URL `ids` of shape (1, L)."""
+def integrated_gradients(model, ids: torch.Tensor, steps: int = 32, baseline_emb=None) -> torch.Tensor:
+    """Per-character IG attributions for a single encoded URL `ids` of shape (1, L).
+
+    baseline_emb: a (D,) vector used at every non-pad position. The all-zero embedding is a poor
+    baseline for this model (it scores as strongly phishing), so the Predictor passes a calibrated
+    neutral vector whose score sits near the decision boundary - see `neutral_baseline`.
+    """
     model.eval()
     mask = ids != 0
     with torch.no_grad():
         emb = model.embedding(ids)
-    baseline = torch.zeros_like(emb)  # same as the padding embedding
+    if baseline_emb is None:
+        baseline = torch.zeros_like(emb)
+    else:
+        baseline = baseline_emb.view(1, 1, -1).expand_as(emb) * mask.unsqueeze(-1)
     alphas = torch.linspace(0, 1, steps + 1, device=ids.device)[1:].view(-1, 1, 1)
     interp = (baseline + alphas * (emb - baseline)).requires_grad_(True)
-    # cuDNN RNNs refuse backward in eval mode; fall back to the native kernel here.
     with torch.backends.cudnn.flags(enabled=False):
         logits = model.forward_from_embeddings(interp, mask.expand(steps, -1))
     (grads,) = torch.autograd.grad(logits.sum(), interp)
     attr = ((emb - baseline) * grads.mean(0, keepdim=True)).sum(-1).squeeze(0)
     return attr[mask[0]].detach()
+
+
+@torch.no_grad()
+def neutral_baseline(model, tokenizer, texts, target_logit=0.0, iters=30):
+    """Find a vector b = t * mean_char_embedding whose score on typical URLs is close to `target_logit`.
+
+    The mean character embedding (scaled by t in [0, 1]) moves smoothly from the zero vector to an
+    "average character". We pick t by bisection so the baseline is neither phishing nor legitimate,
+    which makes IG attributions read as "pushed toward phishing" vs "toward legitimate".
+    """
+    model.eval()
+    device = next(model.parameters()).device
+    ids = torch.from_numpy(tokenizer.encode_batch(texts, dynamic=True)).to(device)
+    mask = ids != 0
+    mean_vec = model.embedding.weight[2:].mean(0)
+
+    def score(t):
+        base = (t * mean_vec).view(1, 1, -1).expand(ids.size(0), ids.size(1), -1) * mask.unsqueeze(-1)
+        return model.forward_from_embeddings(base, mask).median().item()
+
+    best_t, best_gap = 0.0, abs(score(0.0) - target_logit)
+    grid = [i / 20 for i in range(21)] + [1.5, 2.0, 3.0]
+    for t in grid:
+        gap = abs(score(t) - target_logit)
+        if gap < best_gap:
+            best_t, best_gap = t, gap
+    return best_t * mean_vec, best_t, score(best_t)
+
+
+@torch.no_grad()
+def token_occlusion(model, tokenizer, text: str, tokens, logit_full: float):
+    """Token importance = logit(URL) - logit(URL with that token deleted). Positive -> toward phishing."""
+    if not tokens:
+        return []
+    variants = [text[:t["start"]] + text[t["end"]:] or "?" for t in tokens]
+    ids = torch.from_numpy(tokenizer.encode_batch(variants, dynamic=True)).to(next(model.parameters()).device)
+    logits = model(ids).tolist()
+    return [logit_full - lg for lg in logits]
 
 
 def token_attributions(text: str, char_attr):

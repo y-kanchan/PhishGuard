@@ -13,7 +13,7 @@ from .metrics import compute_metrics, plot_report, save_json
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--data", required=True)
-    p.add_argument("--model", default="models/phishguard_hybrid.pt")
+    p.add_argument("--model", default="models/cnn_lstm.pt")
     p.add_argument("--url-col")
     p.add_argument("--label-col")
     p.add_argument("--invert-labels", action="store_true")
@@ -26,7 +26,7 @@ def main():
     probs = predictor.predict_proba(df["url"].tolist())
     metrics = compute_metrics(df["label"].values, probs, predictor.threshold)
     save_json({"data": args.data, "model": args.model, "metrics": metrics}, Path(args.out) / "metrics.json")
-    plot_report(df["label"].values, probs, predictor.threshold, args.out, title="PhishGuard (external)")
+    plot_report(df["label"].values, probs, predictor.threshold, args.out, title="PhisNet (external)")
     for k in ("accuracy", "precision", "recall", "f1", "roc_auc", "false_positive_rate"):
         print(f"{k:>20}: {metrics[k]:.4f}")
     print(f"reports -> {args.out}")

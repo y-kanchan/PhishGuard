@@ -1,237 +1,156 @@
-# PhishGuard
+# PhisNet: Explainable Deep Learning Phishing URL Detection Platform
 
-**Explainable Real-Time Phishing URL Detection Using a Hybrid CNN-BiLSTM Deep Learning Model**
+PhisNet is an end-to-end, explainable deep learning platform that classifies URLs as **phishing** or **legitimate** using only character sequences. It evaluates links in milliseconds before the page loads—requiring no page downloading, DNS lookups, or third-party reputation feeds.
 
-PhishGuard classifies a URL as *phishing* or *legitimate* using only its characters. It needs no page
-download, WHOIS lookup or third-party lookup, so it can score a URL in milliseconds, before the page loads.
-Every prediction comes with an explanation.
+Every prediction is paired with real-time explainability, including **Integrated Gradients** attribution heatmaps, **occlusion token sensitivity**, and **lexical indicator red flags**.
+
+---
+
+## Key Features
+
+- **Real-Time Detection:** Fast neural network inference scoring character sequences in milliseconds.
+- **Deep Learning Architecture:** Hybrid 1D-CNN + Bidirectional LSTM with Additive Attention pooling.
+- **Explainable AI (XAI):**
+  - **Character Attribution Heatmaps:** Integrated Gradients on embeddings (32 steps) showing exact characters pushing toward phishing (red) vs legitimate (green).
+  - **Influential Token Ranking:** Occlusion sensitivity testing which URL tokens have the strongest impact on the classification logit.
+  - **Lexical Indicators:** Rule-based heuristics (punycode, suspicious TLDs, IP hosts, credentials in URL) providing transparent supporting context.
+- **Interactive 5-Page Web Platform:**
+  - **Scan:** Single URL instant scanner with real-time attribution and token breakdown.
+  - **Batch:** Bulk URL evaluation with CSV upload, filtering, sorting, and CSV export.
+  - **Model:** Live test-set metrics, confusion matrix, ROC-PR curves, training history, and architecture breakdown.
+  - **Dataset:** Dataset analysis, cleaning funnel, URL length distribution, and top TLD statistics for PhiUSIIL.
+  - **History:** Local SQLite scan history log (`data/history.db`) with quick search and metrics.
+- **FastAPI Backend:** Fully typed REST API with interactive Swagger docs at `/docs`.
+
+---
 
 ## Architecture
 
 ```
-URL ─► normalise (lowercase, strip scheme + www.) ─► char ids (max 200)
-   ─► Embedding (64-d)
-   ─► 3 parallel Conv1D branches, kernel 3/5/7, 128 filters each, ReLU, BatchNorm   ← local n-gram patterns
-   ─► BiLSTM (128 units per direction)                                              ← sequential context
-   ─► Additive attention pooling                                                    ← per-character weights
-   ─► Dense(64, ReLU) ─► Dropout ─► Dense(1) ─► sigmoid = P(phishing)
+URL ─► normalise (lower-case, strip scheme and "www.") ─► character IDs (max 128)
+    ─► Embedding (64-d)
+    ─► 3 Parallel Conv1D branches (kernels 3, 5, 7 | 64 filters each | ReLU) + LayerNorm  (local n-grams)
+    ─► Bidirectional LSTM (64 units per direction)                                         (sequential context)
+    ─► Additive Attention Pooling                                                          (per-char weights)
+    ─► Dense(64, ReLU) ─► Dropout(0.3) ─► Dense(1) ─► Sigmoid = P(phishing)
 ```
 
-* **CNN** detects local patterns such as `paypa1`, `-login-`, `.tk/`, `xn--` and IP octets.
-* **BiLSTM** models how those patterns are arranged across the URL, for example a brand
-  that appears as a subdomain of an unrelated domain.
-* **Attention** pools the sequence and shows which positions the model used.
-* The convolutions use "same" padding, so each time step still lines up with one character.
-  This lets the explanations be drawn on the URL itself.
+- **CNN branches:** Extract local character patterns such as `paypa1`, `-login-`, `.top/`, `xn--`, and IP octets.
+- **BiLSTM layer:** Captures long-range syntactic relationships (e.g., brand names placed in subdomains of unrelated domains).
+- **Attention pooling:** Automatically weighs influential positions across the entire sequence.
+- **Character Alignment:** Same-padding ensures each time-step matches an input character for heatmaps.
 
-### Explainability
+---
 
-| Method | What it shows |
-|---|---|
-| Integrated Gradients (on embeddings, 32 steps) | Signed contribution of every character to the phishing score |
-| Token aggregation | IG summed over URL tokens (`paypal`, `verify`, `tk`, …) gives the "most influential tokens" |
-| Attention weights | Where the pooling layer focused |
-| Lexical indicators | Rule-based red flags (IP host, `@`, punycode, suspicious TLD, brand outside the registered domain, …). Shown as supporting evidence only. **They are not model inputs.** |
+## Evaluation (PhiUSIIL Dataset)
 
-### Design choices worth mentioning in a report
+Trained and evaluated on the **PhiUSIIL Phishing URL Dataset** (UCI ML Repository #967, 231,747 unique URLs after deduplication; stratified 80 / 10 / 10 split).
 
-* **Scheme stripping:** several public datasets store phishing URLs with `http://` and benign
-  URLs without a scheme. A model trained on raw strings learns that artifact and not phishing patterns.
-* **De-duplication and conflict removal:** URLs are de-duplicated after normalisation, and
-  URLs that appear with both labels are dropped. This stops the same URL from appearing in train and test.
-* **Class imbalance:** handled with `pos_weight` in the loss. The decision threshold is tuned on the
-  validation set for best F1 and stored in the checkpoint.
-* **Ablations:** `--arch cnn` and `--arch bilstm` train the single-branch variants.
-  `src.baseline` trains a TF-IDF char n-gram + logistic regression baseline on the same split.
-
-## Evaluation
-
-Results on the **PhiUSIIL Phishing URL Dataset** (UCI ML Repository, id 967; 235,795 URLs). The dataset was
-cleaned to 231,747 unique URLs and split 80 / 10 / 10 with stratification. Scores are on the held-out test set of
-23,175 URLs, at a decision threshold tuned for F1 on the validation set. Model and code: [`phishnet/`](phishnet/).
-
-| Model | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC | False positive rate |
+| Model | Accuracy | Precision | Recall | F1 Score | ROC-AUC | PR-AUC | False Positive Rate |
 |---|---|---|---|---|---|---|---|
-| **CNN-LSTM** (Conv1D k=3/5/7 + BiLSTM + attention, 215K params) | **0.9017** | **0.9460** | **0.8112** | **0.8734** | **0.9408** | **0.9452** | **0.0333** |
-| TF-IDF char 1–5-grams + logistic regression (baseline) | 0.8948 | 0.9282 | 0.8111 | 0.8657 | 0.9406 | – | 0.0451 |
+| **CNN-LSTM** (Hybrid with Attention) | **0.9017** | **0.9460** | **0.8112** | **0.8734** | **0.9408** | **0.9452** | **0.0333** |
+| TF-IDF (1–5 grams) + Logistic Regression | 0.8948 | 0.9282 | 0.8111 | 0.8657 | 0.9406 | – | 0.0451 |
 
-**Confusion matrix** (CNN-LSTM, test set):
+---
 
-| | Predicted legitimate | Predicted phishing |
-|---|---|---|
-| **Actually legitimate** | 13,032 | 449 |
-| **Actually phishing** | 1,830 | 7,864 |
+## Quick Start
 
-**Shortcut audit.** In the raw PhiUSIIL data every legitimate URL is a bare `https://www.<domain>` homepage
-with no path. Scheme and `www.` are therefore stripped, and neutral paths are added to 35 % of the training
-legitimate URLs. The audit checks how far the model still relies on "has a path":
-
-| Check | CNN-LSTM |
-|---|---|
-| False positive rate, legitimate homepages | 3.33 % |
-| False positive rate, legitimate domains with random paths from an unseen vocabulary | 37.51 % |
-| Phishing recall, URLs with a path | 98.43 % |
-| Phishing recall, host name only | 74.34 % |
-
-Because of this preprocessing, the scores are lower than the near-100 % often reported for PhiUSIIL. The
-37.5 % row shows that the path shortcut is reduced but not removed. Training data with real legitimate URLs that
-have paths would be needed to remove it.
-
-Training ran on a CPU for 7 epochs, about 19 minutes per epoch. The model uses AdamW with a one-cycle learning
-rate schedule, batches bucketed by URL length, and LayerNorm. The full write-up is in
-[`phishnet/README.md`](phishnet/README.md).
-
-> `reports/comparison.md` previously listed scores of about 1.000. Those came from the synthetic smoke-test data
-> (`scripts/make_demo_data.py`), which is meaningless for evaluation. It now holds the PhiUSIIL results above.
-
-## Project layout
-
-```
-src/
-  data.py        CSV loading, label mapping, normalisation, char tokenizer, splits
-  model.py       PhishGuardNet (hybrid / cnn / bilstm)
-  train.py       training loop, early stopping, threshold tuning, test report + plots
-  explain.py     Integrated Gradients, token attribution, lexical indicators
-  inference.py   Predictor class used by the CLI and the API
-  metrics.py     metrics + confusion matrix / ROC / PR / training-curve plots
-  evaluate.py    evaluate a checkpoint on another dataset (generalisation)
-  baseline.py    TF-IDF + logistic regression baseline
-  compare.py     builds reports/comparison.md from all runs
-  predict.py     command-line explained prediction
-app/server.py    FastAPI real-time API + web UI (app/static/index.html)
-extension/       Chrome extension (Manifest V3), on-device ONNX inference
-scripts/
-  make_demo_data.py      synthetic data, for smoke tests only
-  export_onnx.py         checkpoint -> extension/model/phishguard.onnx (+ parity check)
-  make_icons.py          extension icons
-  package_extension.py   zip for the Chrome Web Store
-```
-
-## Setup
+### 1. Installation
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 1. Get a dataset
+### 2. Run the Web Platform
 
-Put a CSV in `data/`. Column names are auto-detected (`url`/`domain`, `label`/`type`/`status`/`class`).
-String labels such as `phishing`, `malicious`, `benign` and `legitimate` and 0/1 labels are all mapped automatically.
-
-| Dataset | Where | Notes |
-|---|---|---|
-| **PhiUSIIL Phishing URL** (≈235k) | UCI ML Repository | `label` uses **1 = legitimate**, so pass `--invert-labels --url-col URL --label-col label` |
-| **Malicious URLs dataset** (≈651k) | Kaggle, `malicious_phish.csv` | `type` column. Add `--drop-types malware defacement` for a pure phishing-vs-benign task |
-| **Phishing Site URLs** (≈549k) | Kaggle, `phishing_site_urls.csv` | `Label` = `bad` / `good` |
-| PhishTank / OpenPhish + Tranco top sites | phishtank.org, tranco-list.eu | Build your own fresh dataset from live feeds |
-
-For a quick check that everything runs, use synthetic data. **Its scores mean nothing:**
+Start the web server:
 
 ```bash
-python scripts/make_demo_data.py --n 6000
+python run.py
 ```
 
-## 2. Train
+Or using uvicorn directly:
 
 ```bash
-python -m src.train --data data/malicious_phish.csv --drop-types malware defacement
-# fast experiment on a CPU:
-python -m src.train --data data/malicious_phish.csv --max-samples 60000 --epochs 8
+python -m uvicorn app.server:app --host 127.0.0.1 --port 8000
 ```
 
-This writes `models/phishguard_hybrid.pt` and puts the following in `reports/hybrid/`:
-`metrics.json`, `confusion_matrix.png`, `roc_pr_curves.png` and `training_curves.png`.
-A GPU is strongly recommended for the full dataset. On a CPU, use `--max-samples` or run it on Google Colab.
+Open **[http://localhost:8000](http://localhost:8000)** in your browser.  
+API documentation is available at **[http://localhost:8000/docs](http://localhost:8000/docs)**.
 
-## 3. Ablations, baseline and comparison table
+---
+
+## CLI Prediction
+
+You can explain any URL directly from the terminal:
 
 ```bash
-python -m src.train    --data data/urls.csv --arch cnn
-python -m src.train    --data data/urls.csv --arch bilstm
-python -m src.baseline --data data/urls.csv
-python -m src.compare               # -> reports/comparison.md
+python -m src.predict "http://paypal-secure-login.xyz/verify" "https://github.com"
 ```
 
-Use the same `--data`, filtering flags, `--max-samples` and `--seed` for every run so they share one split.
-
-## 4. Explain a prediction
+Output format with JSON:
 
 ```bash
-python -m src.predict "http://paypal.com.verify-account.tk/webscr/login.php" "https://github.com"
+python -m src.predict "http://paypal-secure-login.xyz/verify" --json
 ```
 
-## 5. Real-time web app
+---
 
-```bash
-uvicorn app.server:app --port 8000
-```
+## Training & Evaluation
 
-Open http://localhost:8000 to see the verdict, the probability, a character heatmap (red pushes toward phishing,
-green toward legitimate), attention weights, top tokens and red flags.
+To retrain the model or test on another dataset:
 
-API:
+1. Place the dataset in `data/raw/PhiUSIIL_Phishing_URL_Dataset.csv` (or any custom CSV).
+2. Generate dataset statistics:
+   ```bash
+   python -m src.dataset_stats
+   ```
+3. Train the model:
+   ```bash
+   python -m src.train
+   ```
+   (Options: `--data <path>`, `--arch cnn_lstm|cnn|lstm`, `--epochs 10`, `--batch-size 128`)
+4. Evaluate a checkpoint on an external dataset:
+   ```bash
+   python -m src.evaluate --data path/to/dataset.csv --url-col url --label-col label
+   ```
 
-```
-POST /api/predict   {"url": "...", "explain": true}
-POST /api/batch     {"urls": ["...", "..."]}
-GET  /api/health
-```
+---
 
-## 6. Chrome extension (runs fully on-device)
-
-The extension contains the trained model as ONNX and runs it in the browser with onnxruntime-web (WebAssembly).
-It needs no server, and no browsing data leaves the machine.
-
-**Build after each training run**, then reload the extension:
-
-```bash
-python scripts/export_onnx.py --model models/phishguard_hybrid.pt   # -> extension/model/, checks ONNX == PyTorch
-python scripts/make_icons.py                                         # once
-```
-
-**Install:** go to `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and select `extension/`.
-
-**Features**
-
-* Scans every page as navigation starts (`webNavigation.onBeforeNavigate`), then re-checks the final URL after redirects.
-* The toolbar badge shows **OK** or **!**.
-* Phishing URLs are redirected to a **warning page** that explains the verdict. The page offers *Back to safety* or
-  *Continue anyway*; continuing adds the host to the trusted list.
-* The **popup** shows the verdict for the current tab, a heatmap, top tokens and red flags. It also has a box for checking any URL,
-  switches for protection and warnings, scan statistics and trusted-site management.
-
-**How it works**
+## Project Structure
 
 ```
-background.js (service worker)  ── navigation events, badge, warning redirect, settings, result cache
-      │ chrome.runtime messages
-offscreen.html + engine.js       ── onnxruntime-web + model; the service worker cannot load WASM, so the model runs in a hidden offscreen page
-popup.html / warning.html        ── UI (ui.js, styles.css)
+├── app/
+│   ├── server.py             # FastAPI backend with REST endpoints
+│   └── static/
+│       ├── index.html        # Modern 5-page dashboard UI
+│       ├── app.css           # Styling and layout
+│       ├── app.js            # Frontend logic and API calls
+│       └── charts.js         # Interactive canvas charts
+├── data/
+│   ├── history.db            # SQLite scan history database
+│   └── raw/
+│       └── README.md         # Instructions for raw dataset placement
+├── models/
+│   └── cnn_lstm.pt           # Trained PyTorch CNN-LSTM checkpoint
+├── reports/
+│   ├── cnn_lstm/             # Evaluation plots and metrics JSON
+│   ├── tfidf_logreg/         # Baseline metrics
+│   └── dataset.json          # Dataset statistics
+├── src/
+│   ├── baseline.py           # TF-IDF + Logistic Regression baseline
+│   ├── data.py               # Preprocessing, normalization, tokenization
+│   ├── dataset_stats.py      # Computes dataset profiling and distributions
+│   ├── evaluate.py           # External evaluation script
+│   ├── explain.py            # Integrated Gradients & occlusion attribution
+│   ├── finalize.py           # Evaluation pipeline and reporting
+│   ├── inference.py          # Fast prediction pipeline
+│   ├── metrics.py            # Evaluation metrics and curve generation
+│   ├── model.py              # PyTorch CNN-LSTM neural network
+│   ├── predict.py            # CLI prediction utility
+│   └── train.py              # Training loop with one-cycle schedule
+├── requirements.txt          # Python dependencies
+├── run.py                    # Server launcher
+├── run.ps1                   # PowerShell launch script
+└── README.md                 # Project documentation
 ```
-
-`engine.js` re-implements the Python normalisation, tokenizer and lexical rules. Integrated Gradients needs
-gradients, which onnxruntime-web does not provide, so the extension uses **occlusion**. Each URL token is replaced
-by the unknown-character id, and the change in the phishing logit is that token's score. All occluded variants
-run as one batch, which takes about 50 ms per URL.
-
-The bundled `lib/` files come from `onnxruntime-web@1.20.1` (`dist/ort.wasm.min.js`, `ort-wasm-simd-threaded.wasm`,
-`ort-wasm-simd-threaded.mjs`). Chrome extensions cannot load remote code, so these files are shipped inside the extension.
-
-**Publish:** `python scripts/package_extension.py` writes `dist/phishguard-extension-<version>.zip` for the
-Chrome Web Store developer dashboard. The store listing needs a privacy statement. Because everything runs on-device,
-it can state that no browsing data is collected or transmitted.
-
-## 7. Generalisation check
-
-Train on one dataset and test on another. This is the most honest measure of real-world performance:
-
-```bash
-python -m src.evaluate --data data/phiusiil.csv --url-col URL --invert-labels
-```
-
-## Limitations
-
-* Only the URL is used. A phishing page hosted on a compromised legitimate domain with a clean-looking path
-  is hard to catch from the URL alone.
-* Attention weights are not a faithful explanation by themselves, which is why IG is the primary explanation.
-* Phishing patterns change over time, so retrain periodically on fresh feeds.

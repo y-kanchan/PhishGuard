@@ -40,7 +40,7 @@ def save_json(obj, path):
         json.dump(obj, f, indent=2, default=float)
 
 
-def plot_report(labels, probs, threshold, out_dir, history=None, title="PhishGuard"):
+def plot_report(labels, probs, threshold, out_dir, history=None, title="CNN-LSTM"):
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     labels, probs = np.asarray(labels), np.asarray(probs)
@@ -87,3 +87,23 @@ def plot_report(labels, probs, threshold, out_dir, history=None, title="PhishGua
         fig.tight_layout()
         fig.savefig(out / "training_curves.png", dpi=150)
         plt.close(fig)
+
+
+def curve_points(labels, probs, n=120) -> dict:
+    """Down-sampled ROC / PR curves and a score histogram, for drawing in the web UI."""
+    labels, probs = np.asarray(labels), np.asarray(probs)
+    fpr, tpr, _ = roc_curve(labels, probs)
+    prec, rec, _ = precision_recall_curve(labels, probs)
+
+    def thin(xs, ys):
+        idx = np.unique(np.linspace(0, len(xs) - 1, min(n, len(xs))).astype(int))
+        return [[round(float(xs[i]), 5), round(float(ys[i]), 5)] for i in idx]
+
+    bins = np.linspace(0, 1, 41)
+    return {
+        "roc": thin(fpr, tpr),
+        "pr": thin(rec[::-1], prec[::-1]),
+        "hist_bins": bins.round(3).tolist(),
+        "hist_legit": np.histogram(probs[labels == 0], bins)[0].tolist(),
+        "hist_phish": np.histogram(probs[labels == 1], bins)[0].tolist(),
+    }
