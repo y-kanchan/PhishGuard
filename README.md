@@ -1,4 +1,4 @@
-# PhisNet: Explainable Deep Learning Phishing URL Detection Platform
+# PhishNet: Explainable Deep Learning Phishing URL Detection Platform
 
 PhisNet is an end-to-end, explainable deep learning platform that classifies URLs as **phishing** or **legitimate** using only character sequences. It evaluates links in milliseconds before the page loads—requiring no page downloading, DNS lookups, or third-party reputation feeds.
 
